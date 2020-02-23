@@ -32,7 +32,6 @@ ydl = ytdl.YoutubeDL({
     'source_address': '0.0.0.0'
 })
 
-
 @client.event
 async def on_ready():
 	try:
