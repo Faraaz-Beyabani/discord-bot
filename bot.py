@@ -31,7 +31,6 @@ async def on_message(message):
         if message.content.startswith('owoplay'):
             await channel.send('https://www.youtube.com'+random.choice(soup))
 
-
     await client.process_commands(message)
 
 client.run(token)
