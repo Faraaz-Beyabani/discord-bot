@@ -14,7 +14,7 @@ load_dotenv()
 client = commands.Bot(command_prefix = 'owo')
 token = os.environ['BOT_TOKEN']
 yt_list = requests.get('https://www.youtube.com/playlist?list=PLQrjHunXuYt7i9uaxZIdxinu71JjXY7LG')
-soup = [a['href'] for a in BeautifulSoup(yt_list).body.find_all('a', class_='yt-simple-endpoint', href=True)]
+soup = [a['href'] for a in BeautifulSoup(yt_list.text, 'html.parser').body.find_all('a', class_='yt-simple-endpoint', href=True)]
 
 @client.event
 async def on_ready():
