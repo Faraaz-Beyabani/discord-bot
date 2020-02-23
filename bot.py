@@ -1,11 +1,12 @@
+import os
 import discord
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = discord.Client()
 
-token = None
-with open('./.env', 'r') as f:
-    for line in f:
-        token = str(line)
+token = os.getenv('BOT_TOKEN')
 
 @client.event
 async def on_ready():
