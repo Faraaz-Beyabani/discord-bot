@@ -1,11 +1,13 @@
 import os
 import discord
+from discord.ext import commands 
+
 import asyncio
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = discord.Client()
+client = commands.Bot(command_prefix = 'p')
 
 token = os.environ['BOT_TOKEN']
 
@@ -22,5 +24,7 @@ async def on_message(message):
     if not message.author.bot:
         channel = message.channel
         await channel.send(message.content)
+
+    await client.process_commands(message)
 
 client.run(token)

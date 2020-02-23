@@ -1,3 +1,4 @@
 .env
 virtual/
 .vscode/
+win_setup.ps1
