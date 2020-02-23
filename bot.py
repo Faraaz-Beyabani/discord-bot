@@ -3,8 +3,11 @@ import random
 
 from bs4 import BeautifulSoup
 import requests
+
 import discord
-from discord.ext import commands 
+from discord.ext import commands
+from discord.ext.commands import Bot
+from discord.voice_client import VoiceClient
 
 import asyncio
 from dotenv import load_dotenv
@@ -24,13 +27,23 @@ async def on_ready():
 	except Exception as e:
 		print(e)
 
-@client.event
-async def on_message(message):
-    if not message.author.bot:
-        channel = message.channel
-        if message.content.startswith('owoplay'):
-            await channel.send('https://www.youtube.com'+random.choice(soup))
+@client.command(pass_context=True)
+async def play(ctx):
+    url = 'https://www.youtube.com'+random.choice(soup)
 
-    await client.process_commands(message)
+    voice_channel =  ctx.message.author.voice
+    if not voice_channel or not voice_channel.channel:
+        await ctx.send("You are not connected to a voice channel, idiot.")
+        return
+
+    vc = await voice_channel.channel.connect()
+    
+@client.command(pass_context = True)
+async def stop(ctx):
+    for x in client.voice_clients:
+        if(x == ctx.message.author.voice.channel):
+            return await x.disconnect()
+
+    return await ctx.send("I am not connected to any voice channel on this server!")
 
 client.run(token)
