@@ -19,10 +19,17 @@ load_dotenv()
 client = commands.Bot(command_prefix = 'owo')
 token = os.environ['BOT_TOKEN']
 ydl = ytdl.YoutubeDL({
-    "default_search": "ytsearch",
-    "format": "bestaudio/best",
-    "quiet": True,
-    "extract_flat": "in_playlist"
+    'format': 'bestaudio/best',
+    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'nocheckcertificate': True,
+    'ignoreerrors': False,
+    'logtostderr': False,
+    'quiet': True,
+    'no_warnings': True,
+    'default_search': 'auto',
+    'source_address': '0.0.0.0'
 })
 
 
@@ -39,20 +46,21 @@ async def play(ctx):
     yt_list = requests.get('https://www.youtube.com/playlist?list=PLQrjHunXuYt7i9uaxZIdxinu71JjXY7LG')
     soup = [a['href'] for a in BeautifulSoup(yt_list.text, 'html.parser').body.find_all('a',{'class':'pl-video-title-link'})]
     url = ('https://www.youtube.com'+random.choice(soup)).split('&list')[0]
+    vc = None
 
     voice_channel =  ctx.message.author.voice
     if not voice_channel or not voice_channel.channel:
         await ctx.send("You are not connected to a voice channel, idiot.\nhttps://tenor.com/r4Hd.gif")
         return
     elif client.voice_clients:
-        await ctx.send("Already connected to a channel, moron.\nhttps://tenor.com/r4Hd.gif")
-        return
+        vc = await voice_channel.move_to()
 
-    file = ydl.extract_info(url, download=True)
-    path = str(file['title']) + "-" + str(file['id'] + ".mp3")
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(None, lambda: ydl.extract_info(url, download=False))
+    filename = data['url']
 
     vc = await voice_channel.channel.connect()
-    vc.play(discord.FFmpegPCMAudio(path), after=lambda: os.remove(path))
+    vc.play(discord.FFmpegPCMAudio(filename, executable='./ffmpeg/bin/ffmpeg.exe', **{'options': '-vn'}))
     
 @client.command(pass_context = True)
 async def stop(ctx):
