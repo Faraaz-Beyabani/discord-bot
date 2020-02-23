@@ -29,7 +29,7 @@ ydl = ytdl.YoutubeDL({
     'quiet': True,
     'no_warnings': True,
     'default_search': 'auto',
-    'source_address': '24.148.24.77'
+    'source_address': '0.0.0.0'
 })
 
 @client.event
