@@ -1,12 +1,13 @@
 import os
 import discord
+import asyncio
 from dotenv import load_dotenv
 
 load_dotenv()
 
 client = discord.Client()
 
-token = os.getenv('BOT_TOKEN')
+token = os.environ['BOT_TOKEN']
 
 @client.event
 async def on_ready():
