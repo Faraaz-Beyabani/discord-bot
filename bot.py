@@ -46,10 +46,15 @@ async def on_message(message):
     if message.content.lower().startswith('bot'):
         if re.search('am i', message.content.lower()):
             await message.channel.send('yep, you are')
+        elif re.search(r'are*? u', message.content.lower().replace('you', 'u')):
+            await message.channel.send(f'yes i am {" ".join(message.content.split()[3:])}')
         elif re.search(r'do[n\'t]*? u', message.content.lower().replace('you', 'u')):
             await message.channel.send('yep, i do')
         elif match := re.search(r'is [a-zA-z]*?', message.content.lower()):
-            await message.channel.send(f'yep, {message.content.split()[2]} is {" ".join(message.content.split()[3:])}')
+            if message.content.split()[2] in ['your', 'the']:
+                await message.channel.send(f'yep, {" ".join(message.content.split()[2:4]).replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[4:])}')
+            else:
+                await message.channel.send(f'yep, {message.content.split()[2].replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[3:]).replace("yours", "mine").replace("your", "my").replace("you", "i")}')
 
     await client.process_commands(message)
 
