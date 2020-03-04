@@ -60,6 +60,10 @@ async def on_message(message):
                 await message.channel.send(f'yep, {" ".join(message.content.split()[2:4]).replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[4:]).replace("yours", "mine").replace("your", "my").replace("you", "me")}')
             else:
                 await message.channel.send(f'yep, {message.content.split()[2].replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[3:]).replace("yours", "mine").replace("your", "my").replace("you", "i")}')
+    elif any(rm.id == 629821886955520011 for rm in message.role_mentions): 
+        with open('peter_callout.txt', 'r') as file:
+            data = file.read().replace('\n', '')
+            await message.guild.get_member(135966139070152704).send(data)
 
     await client.process_commands(message)
 
