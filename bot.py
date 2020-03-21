@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = commands.Bot(command_prefix = '~')
+client = commands.Bot(command_prefix = '=')
 token = os.environ['BOT_TOKEN']
 
 @client.event
@@ -47,7 +47,7 @@ async def on_message(message):
 
     await client.process_commands(message)
 
-@client.command(pass_context=True)
+@client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.split()[1:]
     roll_results = []
@@ -70,12 +70,8 @@ async def roll(ctx):
     if error:
         await ctx.send("Could not parse some dice.")
 
-@client.command(pass_context=True)
+@client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
-    coin = random.choice([0, 1])
-    if coin == 0:
-        await ctx.send("heads")
-    else:
-        await ctx.send("tails")
+    await ctx.send(random.choice(['heads', 'tails']))
 
 client.run(token)
