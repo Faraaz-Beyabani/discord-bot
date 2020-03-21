@@ -56,12 +56,17 @@ async def roll(ctx):
         result = 0
         try:
             count, sides = die.split('d')
+            mod = re.search(r'\d[+\-/*]\d*', sides) or ''
+            if mod:
+                mod = mod.group()[1:]
+                sides = sides.replace(mod, '')
             count = 1 if not count else int(count)
             sides = int(sides)
+
             for i in range(count):
                 result += random.randint(1,sides)
-            roll_results.append(str(result))
-        except:
+            roll_results.append(str(eval(f'{result}{mod}')))
+        except Exception as e:
             error = True
             roll_results.append(die)
     
