@@ -2,36 +2,16 @@ import os
 import re
 import random
 
-from bs4 import BeautifulSoup
-import requests
-import asyncio
-import youtube_dl as ytdl
-
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
-from discord.voice_client import VoiceClient
-from discord import FFmpegAudio
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = commands.Bot(command_prefix = 'owo')
+client = commands.Bot(command_prefix = '~')
 token = os.environ['BOT_TOKEN']
-ydl = ytdl.YoutubeDL({
-    'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': False,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0'
-})
 
 @client.event
 async def on_ready():
@@ -66,5 +46,36 @@ async def on_message(message):
             await message.guild.get_member(135966139070152704).send(data)
 
     await client.process_commands(message)
+
+@client.command(pass_context=True)
+async def roll(ctx):
+    dice = ctx.message.content.split()[1:]
+    roll_results = []
+    error = False
+    for die in dice:
+        result = 0
+        try:
+            count, sides = die.split('d')
+            count = 1 if not count else int(count)
+            sides = int(sides)
+            for i in range(count):
+                result += random.randint(1,sides)
+            roll_results.append(str(result))
+        except:
+            error = True
+            roll_results.append(die)
+    
+    if roll_results:
+        await ctx.send(' '.join(roll_results))
+    if error:
+        await ctx.send("Could not parse some dice.")
+
+@client.command(pass_context=True)
+async def flip(ctx):
+    coin = random.choice([0, 1])
+    if coin == 0:
+        await ctx.send("heads")
+    else:
+        await ctx.send("tails")
 
 client.run(token)

@@ -1,4 +1,5 @@
 virtual/
+botenv/
 .vscode/
 .env
 peter_callout.txt
