@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-channelID = "691100088004771910"
+channelID = "688401132304990231"
 botToken = os.environ['BOT_TOKEN']
 
 baseURL = "https://discordapp.com/api/channels/{}/messages".format(channelID)
