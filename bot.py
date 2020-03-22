@@ -91,10 +91,14 @@ async def npc(ctx):
         'halfling': ['rin', 'mer', 'ret', 'dri', 'tia', 'os', 'born', 'by', 'mia', 'sera', 'ela', 'jil', 'ver'],
         'tiefling': ['bara', 'kas', 'kis', 'nos', 'am', 'mal', 'isto', 'seis', 'kal', 'ista', 'mon', 'ana', 'rai', 'kos', 'mak'],
     }
+    jobs = ['alchemist', 'apothecary', 'armorer', 'locksmith', 'brewer', 'calligrapher', 'scribe', 'carpenter', 'roofer', 'plasterer', 'cartographer', 
+        'surveyor', 'cobbler', 'cook', 'glassblower', 'jeweler', 'gemcutter', 'leatherworker', 'tanner', 'furrier', 'mason', 'stonecutter', 'painter', 
+        'potter', 'shipwright', 'blacksmith', 'goldsmith', 'tinkerer', 'wheelwright', 'weaver', 'dyer', 'woodcarver', 'cooper', 'adventurer',
+        'priest', 'knight', 'guard', 'hunter', 'scout', 'fisherman', 'farmer', 'librarian', 'fletcher']
     message = ctx.message.content
     name = ''
 
-    if 'half-elf' in message:
+    if 'helf' in message:
         choices = races['elf'] + races['human']
         num = random.randint(2, 4)
         for i in range(num):
@@ -163,7 +167,12 @@ async def npc(ctx):
     if match:
         name = re.sub(match.group(), match.group()[0]*2, name)
 
-    await ctx.send(name.capitalize())
+    name = name.capitalize()
+
+    if ',' in message:
+        name += f', {random.choice(jobs).capitalize()}'
+
+    await ctx.send(name)
 
 
 client.run(token)
