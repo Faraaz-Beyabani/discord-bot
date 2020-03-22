@@ -1,6 +1,7 @@
 import os
 import re
 import random
+import json
 
 import discord
 from discord.ext import commands
@@ -12,6 +13,37 @@ load_dotenv()
 
 client = commands.Bot(command_prefix = '=')
 token = os.environ['BOT_TOKEN']
+
+with open('./races.json') as f:
+    races = json.load(f)
+with open('./jobs.json') as f:
+    jobs = json.load(f)
+
+def roll_die(die):
+    result = 0
+    count, sides = die.split('d')
+    mod = re.search(r'\d[+\-/*]\d*', sides) or ''
+
+    if mod:
+        mod = mod.group()[1:]
+        sides = sides.replace(mod, '')
+    count = 1 if not count else int(count)
+    sides = int(sides)
+
+    for i in range(count):
+        result += random.randint(1,sides)
+
+    return eval(f'{result}{mod}')
+
+def gen_phys(race):
+    score = roll_die(races[race]['height_mod'])
+    height = races[race]['height'] + score
+    weight = races[race]['weight'] + score * roll_die(races[race]['weight_mod'])
+
+    feet = height // 12
+    inches = height % 12
+
+    return f'. {feet}\'{inches}" {weight} lbs.'
 
 @client.event
 async def on_ready():
@@ -53,19 +85,9 @@ async def roll(ctx):
     roll_results = []
     error = False
     for die in dice:
-        result = 0
         try:
-            count, sides = die.split('d')
-            mod = re.search(r'\d[+\-/*]\d*', sides) or ''
-            if mod:
-                mod = mod.group()[1:]
-                sides = sides.replace(mod, '')
-            count = 1 if not count else int(count)
-            sides = int(sides)
-
-            for i in range(count):
-                result += random.randint(1,sides)
-            roll_results.append(str(eval(f'{result}{mod}')))
+            result = roll_die(die)
+            roll_results.append(str(result))
         except Exception as e:
             error = True
             roll_results.append(die)
@@ -81,86 +103,42 @@ async def flip(ctx):
 
 @client.command(pass_context=True)
 async def npc(ctx):
-    races = {
-        'elf': ['ara', 'be', 'tha', 'dan', 'gali', 'var', 'lego', 'las', 'vol', 'lynn', 'eth', 'riel', 'kiir', 'enna', 'and', 'mor', 'vor'],
-        'human': ['del', 'vik', 'thaz', 'mith', 'gan', 'frey', 'mal', 'ath', 'ina', 'arra', 'et', 'ram', 'kina', 'ang', 'der'],
-        'dragonborn':  ['ash', 'kry', 'iv', 'gar', 'cleth', 'ava', 'har', 'kor', 'inn', 'verth', 'yarj', 'fek', 'jho', 'mah', 'un', 'ghe', 'ina'],
-        'gnome': ['ook', 'nock', 'nam', 'oodle', 'vyn', 'kin', 'fun', 'berg', 'bimp', 'sche', 'kle', 'loop', 'aard', 'bree', 'illa', 'froo'],
-        'orc': ['kre', 'nur', 'nor', 'ogg', 'gogg', 'ukk', 'thar', 'lug', 'mur', 'uda', 'sha', 'mog', 'gûl', 'ok', 'grum', 'mhu', 'rex'],
-        'dwarf': ['rich', 'din', 'rin', 'albe', 'arge', 'wynn', 'hild', 'gar', 'bru', 'nor', 'thor', 'jörn', 'rik', 'rim'],
-        'halfling': ['rin', 'mer', 'ret', 'dri', 'tia', 'os', 'born', 'by', 'mia', 'sera', 'ela', 'jil', 'ver'],
-        'tiefling': ['bara', 'kas', 'kis', 'nos', 'am', 'mal', 'isto', 'seis', 'kal', 'ista', 'mon', 'ana', 'rai', 'kos', 'mak'],
-    }
-    jobs = ['alchemist', 'apothecary', 'armorer', 'locksmith', 'brewer', 'calligrapher', 'scribe', 'carpenter', 'roofer', 'plasterer', 'cartographer', 
-        'surveyor', 'cobbler', 'cook', 'glassblower', 'jeweler', 'gemcutter', 'leatherworker', 'tanner', 'furrier', 'mason', 'stonecutter', 'painter', 
-        'potter', 'shipwright', 'blacksmith', 'goldsmith', 'tinkerer', 'wheelwright', 'weaver', 'dyer', 'woodcarver', 'cooper', 'adventurer',
-        'priest', 'knight', 'guard', 'hunter', 'scout', 'fisherman', 'farmer', 'librarian', 'fletcher']
     message = ctx.message.content
-    name = ''
 
-    if 'helf' in message:
-        choices = races['elf'] + races['human']
+    name = ''
+    choices = []
+    height = 0
+    weight = 0
+    try:
+        race = (re.search(r' [a-zA-Z]+', message)).group()[1:]
+    except:
+        await ctx.send("Could not find a race in your message.")
+        return
+
+    if race == 'halfelf':
         num = random.randint(2, 4)
+        choices = races['elf']['names'] + races['human']['names']
+    elif race in ['elf', 'gnome']:
+        num = random.randint(2, 4)
+    elif race in ['human', 'dragonborn', 'dwarf']:
+        num = random.randint(2, 3)
+    elif race in ['halfling', 'tiefling']:
+        num = 2
+    elif race == 'orc':
+        num = random.randint(1, 2)
+    else:
+        await ctx.send("Could not parse the given race.")
+        print(race)
+        return
+
+    if not choices:
+        choices = races[race]['names']
+
+    if not name:
         for i in range(num):
             part = random.choice(choices)
             while part in name:
                 part = random.choice(choices)
-            name += part
-    elif 'elf' in message:
-        num = random.randint(2, 4)
-        for i in range(num):
-            part = random.choice(races['elf'])
-            while part in name:
-                part = random.choice(races['elf'])
-            name += part
-    elif 'human' in message:
-        num = random.randint(2, 3)
-        for i in range(num):
-            part = random.choice(races['human'])
-            while part in name:
-                part = random.choice(races['human'])
-            name += part
-    elif 'dragon' in message:
-        num = random.randint(2, 3)
-        for i in range(num):
-            part = random.choice(races['dragonborn'])
-            while part in name:
-                part = random.choice(races['dragonborn'])
-            name += part
-    elif 'gnome' in message:
-        num = random.randint(2, 4)
-        for i in range(num):
-            part = random.choice(races['gnome'])
-            while part in name:
-                part = random.choice(races['gnome'])
-            name += part
-    elif 'orc' in message:
-        num = random.randint(1, 2)
-        for i in range(num):
-            part = random.choice(races['orc'])
-            while part in name:
-                part = random.choice(races['orc'])
-            name += part
-    elif 'dwarf' in message:
-        num = random.randint(2, 3)
-        for i in range(num):
-            part = random.choice(races['dwarf'])
-            while part in name:
-                part = random.choice(races['dwarf'])
-            name += part
-    elif 'half' in message:
-        num = 2
-        for i in range(num):
-            part = random.choice(races['halfling'])
-            while part in name:
-                part = random.choice(races['halfling'])
-            name += part
-    elif 'tief' in message:
-        num = 2
-        for i in range(num):
-            part = random.choice(races['tiefling'])
-            while part in name:
-                part = random.choice(races['tiefling'])
             name += part
 
     match = re.search(r'(a|e|i|o|u)\1+', name)
@@ -171,8 +149,9 @@ async def npc(ctx):
 
     if ',' in message:
         name += f', {random.choice(jobs).capitalize()}'
+    if '.' in message:
+        name += gen_phys(race)
 
     await ctx.send(name)
-
 
 client.run(token)

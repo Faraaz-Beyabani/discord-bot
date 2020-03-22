@@ -1,0 +1,65 @@
+{
+    "elf": {
+        "names": ["ara", "be", "tha", "dan", "gali", "var", "lego", "las", "vol", "lynn", "eth", "riel", "kiir", "enna", "and", "mor", "vor"],
+        "height": 54,
+        "height_mod": "2d10",
+        "weight": 90,
+        "weight_mod": "2d6"
+    },
+    "human": {
+        "names": ["del", "vik", "thaz", "mith", "gan", "frey", "mal", "ath", "ina", "arra", "et", "ram", "kina", "ang", "der"],
+        "height": 56,
+        "height_mod": "2d10",
+        "weight": 110,
+        "weight_mod": "2d4"
+    },
+    "dragonborn": {
+        "names": ["ash", "kry", "iv", "gar", "cleth", "ava", "har", "kor", "inn", "verth", "yarj", "fek", "jho", "mah", "un", "ghe", "ina"],
+        "height": 66,
+        "height_mod": "2d8",
+        "weight": 175,
+        "weight_mod": "2d6"
+    },
+    "gnome": {
+        "names": ["ook", "nock", "nam", "oodle", "vyn", "kin", "fun", "berg", "bimp", "sche", "kle", "loop", "aard", "bree", "illa", "froo"],
+        "height": 35,
+        "height_mod": "2d4",
+        "weight": 35,
+        "weight_mod": "1d1"
+    },
+    "orc": {
+        "names": ["kre", "nur", "nor", "ogg", "gogg", "ukk", "thar", "lug", "mur", "uda", "sha", "mog", "gul", "ok", "grum", "mhu", "rex"],
+        "height": 58,
+        "height_mod": "2d10",
+        "weight": 140,
+        "weight_mod": "2d6"
+    },
+    "dwarf": {
+        "names": ["rich", "din", "rin", "albe", "arge", "wynn", "hild", "gar", "bru", "nor", "thor", "jorn", "rik", "rim"],
+        "height": 44,
+        "height_mod": "2d4",
+        "weight": 115,
+        "weight_mod": "2d6"
+    },
+    "halfling": {
+        "names": ["rin", "mer", "ret", "dri", "tia", "os", "born", "by", "mia", "sera", "ela", "jil", "ver"],
+        "height": 31,
+        "height_mod": "2d4",
+        "weight": 35,
+        "weight_mod": "1d1"
+    },
+    "tiefling": {
+        "names": ["bara", "kas", "kis", "nos", "am", "mal", "isto", "seis", "kal", "ista", "mon", "ana", "rai", "kos", "mak"],
+        "height": 57,
+        "height_mod": "2d8",
+        "weight": 110,
+        "weight_mod": "2d4"
+    },
+    "halfelf": {
+        "names": [],
+        "height": 57,
+        "height_mod": "2d8",
+        "weight": 110,
+        "weight_mod": "2d4"
+    }
+}
