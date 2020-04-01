@@ -55,6 +55,13 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    if 'worgen' in message.content.lower():
+        text = message.content
+        channel = message.channel
+        author = message.author.nick
+        client.delete_message(message)
+        channel.send(re.sub('worgen', '******', text, flags=re.I) + ' - ' + author)
+
     if message.content.lower().startswith('bot'):
         if re.search('am i', message.content.lower()):
             await message.channel.send('yep, you are')
