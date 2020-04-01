@@ -60,7 +60,7 @@ async def on_message(message):
         channel = message.channel
         author = message.author.nick
         await message.delete()
-        await channel.send(re.sub('worgen', '******', text, flags=re.I) + ' - ' + author)
+        await channel.send(re.sub('worgen', '\*\*\*\*\*\*', text, flags=re.I) + ' - ' + author)
 
     if message.content.lower().startswith('bot'):
         if re.search('am i', message.content.lower()):
