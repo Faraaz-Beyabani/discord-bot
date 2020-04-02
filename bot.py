@@ -89,10 +89,12 @@ async def on_message(message):
 
 @client.command(pass_context=True)
 async def setrem(ctx):
+    global reminder
     reminder = ctx.message.content
 
 @client.command(pass_context=True)
 async def remind(ctx):
+    global reminder
     await ctx.send(reminder)
 
 @client.command(pass_context=True, aliases=['r'])
