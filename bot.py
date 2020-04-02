@@ -83,7 +83,7 @@ async def remind(ctx):
 
     async def r():
         await asyncio.sleep(seconds)
-        await ctx.send(reminder)
+        await ctx.send(f'<@!{ctx.message.author.id}> {reminder}')
 
     await r()
 
