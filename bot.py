@@ -57,6 +57,9 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    if message.author.bot:
+        return
+
     if 'worgen' in message.content.lower():
         text = message.content
         channel = message.channel
@@ -83,7 +86,7 @@ async def remind(ctx):
 
     async def r():
         await asyncio.sleep(seconds)
-        await ctx.send(f'<@!{ctx.message.author.id}> {reminder}')
+        await ctx.send(f'{ctx.message.author.mention} {reminder}')
 
     await r()
 
