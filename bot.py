@@ -2,6 +2,8 @@ import os
 import re
 import random
 import json
+import time
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -13,7 +15,6 @@ load_dotenv()
 
 client = commands.Bot(command_prefix = '=')
 token = os.environ['BOT_TOKEN']
-reminder = ''
 
 with open('./races.json') as f:
     races = json.load(f)
@@ -63,39 +64,28 @@ async def on_message(message):
         await message.delete()
         await channel.send(re.sub('worgen', '\*\*\*\*\*\*', text, flags=re.I) + ' - ' + author)
 
-    if message.content.lower().startswith('bot'):
-        if re.search('am i', message.content.lower()):
-            await message.channel.send('yep, you are')
-        elif re.search(r'are*? u', message.content.lower().replace('you', 'u')):
-            await message.channel.send(f'yes i am {" ".join(message.content.split()[3:])}')
-        elif re.search(r'do[n\'t]*? u', message.content.lower().replace('you', 'u')):
-            await message.channel.send('yep, i do')
-        elif re.search(r'does[n\'t]*? [a-zA-Z]', message.content.lower()):
-            if message.content.split()[2] in ['your', 'the']:
-                await message.channel.send(f'yep, {" ".join(message.content.split()[2:4]).replace("yours", "mine").replace("your", "my").replace("you", "i")} does {" ".join(message.content.split()[4:]).replace("yours", "mine").replace("your", "my").replace("you", "me")}')
-            else:
-                await message.channel.send(f'yep, {message.content.split()[2].replace("yours", "mine").replace("your", "my").replace("you", "i")} does {" ".join(message.content.split()[3:]).replace("yours", "mine").replace("your", "my").replace("you", "i")}')
-        elif match := re.search(r'is [a-zA-Z]*?', message.content.lower()):
-            if message.content.split()[2] in ['your', 'the']:
-                await message.channel.send(f'yep, {" ".join(message.content.split()[2:4]).replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[4:]).replace("yours", "mine").replace("your", "my").replace("you", "me")}')
-            else:
-                await message.channel.send(f'yep, {message.content.split()[2].replace("yours", "mine").replace("your", "my").replace("you", "i")} is {" ".join(message.content.split()[3:]).replace("yours", "mine").replace("your", "my").replace("you", "i")}')
-    elif any(rm.id == 629821886955520011 for rm in message.role_mentions): 
-        with open('peter_callout.txt', 'r') as file:
-            data = file.read().replace('\n', '')
-            await message.guild.get_member(135966139070152704).send(data)
-
     await client.process_commands(message)
 
-@client.command(pass_context=True)
-async def setrem(ctx):
-    global reminder
-    reminder = ctx.message.content
-
-@client.command(pass_context=True)
+@client.command(pass_context=True, aliases=['rem'])
 async def remind(ctx):
-    global reminder
-    await ctx.send(reminder)
+    text = ctx.message.content
+    time_text = text.split()[1]
+    reminder = ' '.join(text.split()[2:])
+    
+    if not reminder:
+        await ctx.send('Please input a non-empty message after a time string')
+        return
+
+    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
+    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
+    seconds += m and int(m.group()[:-1]) * 60 or 0
+    seconds += s and int(s.group()[:-1]) or 0
+
+    async def r():
+        await asyncio.sleep(seconds)
+        await ctx.send(reminder)
+
+    await r()
 
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
