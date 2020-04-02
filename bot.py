@@ -13,6 +13,7 @@ load_dotenv()
 
 client = commands.Bot(command_prefix = '=')
 token = os.environ['BOT_TOKEN']
+reminder = ''
 
 with open('./races.json') as f:
     races = json.load(f)
@@ -85,6 +86,14 @@ async def on_message(message):
             await message.guild.get_member(135966139070152704).send(data)
 
     await client.process_commands(message)
+
+@client.command(pass_context=True):
+async def setrem(ctx):
+    reminder = ctx.message.content
+
+@client.command(pass_context=True):
+async def remind(ctx):
+    await ctx.send(reminder)
 
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
