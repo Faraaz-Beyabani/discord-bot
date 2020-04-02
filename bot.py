@@ -87,11 +87,11 @@ async def on_message(message):
 
     await client.process_commands(message)
 
-@client.command(pass_context=True):
+@client.command(pass_context=True)
 async def setrem(ctx):
     reminder = ctx.message.content
 
-@client.command(pass_context=True):
+@client.command(pass_context=True)
 async def remind(ctx):
     await ctx.send(reminder)
 
