@@ -84,11 +84,10 @@ async def remind(ctx):
     seconds += m and int(m.group()[:-1]) * 60 or 0
     seconds += s and int(s.group()[:-1]) or 0
 
-    async def r():
-        await asyncio.sleep(seconds)
-        await ctx.send(f'{ctx.message.author.mention} {reminder}')
+    await ctx.send('Reminder set.')
 
-    await r()
+    await asyncio.sleep(seconds)
+    await ctx.send(f'{ctx.message.author.mention} {reminder}')
 
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
