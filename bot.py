@@ -6,6 +6,7 @@ import time
 import asyncio
 
 import discord
+from discord import Activity, ActivityType
 from discord.ext import commands
 from discord.ext.commands import Bot
 
@@ -49,23 +50,18 @@ def gen_phys(race):
 
 @client.event
 async def on_ready():
-	try:
-		print('Discord.py Version: {}'.format(discord.__version__))
-	
-	except Exception as e:
-		print(e)
+    try:
+        print('Discord.py Version: {}'.format(discord.__version__))
+        for channel in client.get_all_channels():
+            if channel.name == 'general':
+                await channel.send("I have recovered from downtime. Reminders are no longer valid.")
+    except Exception as e:
+        print(e)
 
 @client.event
 async def on_message(message):
     if message.author.bot:
         return
-
-    if 'worgen' in message.content.lower():
-        text = message.content
-        channel = message.channel
-        author = message.author.nick
-        await message.delete()
-        await channel.send(re.sub('worgen', '\*\*\*\*\*\*', text, flags=re.I) + ' - ' + author)
 
     await client.process_commands(message)
 
@@ -74,15 +70,15 @@ async def remind(ctx):
     text = ctx.message.content
     time_text = text.split()[1]
     reminder = ' '.join(text.split()[2:])
-    
-    if not reminder:
-        await ctx.send('Please input a non-empty message after a time string')
-        return
 
     h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
     seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
     seconds += m and int(m.group()[:-1]) * 60 or 0
     seconds += s and int(s.group()[:-1]) or 0
+
+    if not reminder or seconds == 0:
+        await ctx.send('An empty message or invalid time was entered.')
+        return
 
     await ctx.send('Reminder set.')
 
