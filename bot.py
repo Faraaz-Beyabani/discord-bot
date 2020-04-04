@@ -54,7 +54,8 @@ async def on_ready():
         print('Discord.py Version: {}'.format(discord.__version__))
         for channel in client.get_all_channels():
             if channel.name == 'general':
-                await channel.send("I have recovered from downtime. Reminders are no longer valid.")
+                with open('./online.json') as f:
+                    await channel.send(random.choice(json.load(f)))
     except Exception as e:
         print(e)
 
