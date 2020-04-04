@@ -86,6 +86,26 @@ async def remind(ctx):
     await asyncio.sleep(seconds)
     await ctx.send(f'{ctx.message.author.mention} {reminder}')
 
+@client.command(pass_context=True, aliases=['remall'])
+async def remindall(ctx):
+    text = ctx.message.content
+    time_text = text.split()[1]
+    reminder = ' '.join(text.split()[2:])
+
+    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
+    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
+    seconds += m and int(m.group()[:-1]) * 60 or 0
+    seconds += s and int(s.group()[:-1]) or 0
+
+    if not reminder or seconds == 0:
+        await ctx.send('An empty message or invalid time was entered.')
+        return
+
+    await ctx.send('All BlondeBoyz will be reminded.')
+
+    await asyncio.sleep(seconds)
+    await ctx.send(f'<@&580213049835782204> {reminder}')
+
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.split()[1:]
