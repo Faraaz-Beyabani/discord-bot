@@ -60,6 +60,11 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    res = roll_die('d100')
+    if res == 1 and len(message.content.split()) >= 3:
+        await message.channel.send(' '.join(message.content.split()[-3:]))
+
+
     await client.process_commands(message)
 
 @client.command(pass_context=True, aliases=['rem'])
