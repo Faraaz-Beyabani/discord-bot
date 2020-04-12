@@ -6,10 +6,10 @@ if(!$Work) {
 
 pip install virtualenv
 
-if( -not (Test-Path .\virtual\)) {
-    virtualenv.exe .\virtual\
+if( -not (Test-Path .\botenv\)) {
+    virtualenv.exe .\botenv\
 }
 
-.\virtual\Scripts\activate.ps1
+.\botenv\Scripts\activate.ps1
 
 pip install -r .\requirements.txt

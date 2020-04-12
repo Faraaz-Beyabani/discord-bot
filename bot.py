@@ -64,7 +64,6 @@ async def on_message(message):
     if res == 1 and len(message.content.split()) >= 3:
         await message.channel.send(' '.join(message.content.split()[-3:]))
 
-
     await client.process_commands(message)
 
 @client.command(pass_context=True, aliases=['rem'])
@@ -141,6 +140,10 @@ async def npc(ctx):
         race = (re.search(r' [a-zA-Z]+', message)).group()[1:]
     except:
         await ctx.send("Could not find a race in your message.")
+        return
+
+    if race == 'worgen':
+        await ctx.send("...Did you actually just try to do that?")
         return
 
     if race == 'halfelf':
