@@ -66,46 +66,6 @@ async def on_message(message):
 
     await client.process_commands(message)
 
-@client.command(pass_context=True, aliases=['rem'])
-async def remind(ctx):
-    text = ctx.message.content
-    time_text = text.split()[1]
-    reminder = ' '.join(text.split()[2:])
-
-    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
-    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
-    seconds += m and int(m.group()[:-1]) * 60 or 0
-    seconds += s and int(s.group()[:-1]) or 0
-
-    if not reminder or seconds == 0:
-        await ctx.send('An empty message or invalid time was entered.')
-        return
-
-    await ctx.send('Reminder set.')
-
-    await asyncio.sleep(seconds)
-    await ctx.send(f'{ctx.message.author.mention} {reminder}')
-
-@client.command(pass_context=True, aliases=['remall'])
-async def remindall(ctx):
-    text = ctx.message.content
-    time_text = text.split()[1]
-    reminder = ' '.join(text.split()[2:])
-
-    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
-    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
-    seconds += m and int(m.group()[:-1]) * 60 or 0
-    seconds += s and int(s.group()[:-1]) or 0
-
-    if not reminder or seconds == 0:
-        await ctx.send('An empty message or invalid time was entered.')
-        return
-
-    await ctx.send('All BlondeBoyz will be reminded.')
-
-    await asyncio.sleep(seconds)
-    await ctx.send(f'<@&580213049835782204> {reminder}')
-
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.split()[1:]
@@ -185,6 +145,26 @@ async def npc(ctx):
 
     await ctx.send(name)
 
+@client.command(pass_context=True, aliases=['rem'])
+async def remind(ctx):
+    text = ctx.message.content
+    time_text = text.split()[1]
+    reminder = ' '.join(text.split()[2:])
+
+    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
+    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
+    seconds += m and int(m.group()[:-1]) * 60 or 0
+    seconds += s and int(s.group()[:-1]) or 0
+
+    if not reminder or seconds == 0:
+        await ctx.send('An empty message or invalid time was entered.')
+        return
+
+    await ctx.send('Reminder set.')
+
+    await asyncio.sleep(seconds)
+    await ctx.send(f'{ctx.message.author.mention} {reminder}')
+
 @client.command(pass_context=True)
 async def archive(ctx):
     channel = ctx.channel
@@ -194,7 +174,10 @@ async def archive(ctx):
         with open(filename, 'w') as f:
             async for message in ctx.history(limit=None, oldest_first=True):
                 f.write(message.author.name + '\n')
-                f.write(message.content + '\n')
+                if message.content:
+                    f.write(message.content + '\n')
+                if message.attachments:
+                    f.write(message.attachments[0].url + '\n')
                 f.write('\n')
         log_file = open(filename, 'rb')
         await client.get_channel(708532851188170845).send(file=File(fp=log_file, filename=f'{channel}.txt'))
