@@ -192,7 +192,7 @@ async def archive(ctx):
     await ctx.send(f'Archiving channel {channel}...')
     with ctx.typing():
         with open(filename, 'w') as f:
-            async for message in ctx.history(oldest_first=True):
+            async for message in ctx.history(limit=None, oldest_first=True):
                 f.write(message.author.name + '\n')
                 f.write(message.content + '\n')
                 f.write('\n')
