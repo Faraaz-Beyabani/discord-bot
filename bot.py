@@ -6,7 +6,7 @@ import time
 import asyncio
 
 import discord
-from discord import Activity, ActivityType
+from discord import Activity, ActivityType, File
 from discord.ext import commands
 from discord.ext.commands import Bot
 
@@ -17,9 +17,9 @@ load_dotenv()
 client = commands.Bot(command_prefix = '=')
 token = os.environ['BOT_TOKEN']
 
-with open('./races.json') as f:
+with open('./assets/data/races.json') as f:
     races = json.load(f)
-with open('./jobs.json') as f:
+with open('./assets/data/jobs.json') as f:
     jobs = json.load(f)
 
 def roll_die(die):
@@ -184,5 +184,22 @@ async def npc(ctx):
         name += gen_phys(race)
 
     await ctx.send(name)
+
+@client.command(pass_context=True)
+async def archive(ctx):
+    channel = ctx.channel
+    filename = f'./assets/data/{channel}.txt'
+    await ctx.send(f'Archiving channel {channel}...')
+    with ctx.typing():
+        with open(filename, 'w') as f:
+            async for message in ctx.history(oldest_first=True):
+                f.write(message.author.name + '\n')
+                f.write(message.content + '\n')
+                f.write('\n')
+        log_file = open(filename, 'rb')
+        await client.get_channel(708532851188170845).send(file=File(fp=log_file, filename=f'{channel}.txt'))
+        await ctx.send(f"Done! Archive of <#{channel.id}> created at <#708532851188170845>.")
+        log_file.close()
+    os.remove(filename)
 
 client.run(token)
