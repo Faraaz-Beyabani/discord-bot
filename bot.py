@@ -22,21 +22,9 @@ with open('./assets/data/races.json') as f:
 with open('./assets/data/jobs.json') as f:
     jobs = json.load(f)
 
-def roll_die(die):
-    result = 0
-    count, sides = die.split('d')
-    mod = re.search(r'\d[+\-/*]\d*', sides) or ''
-
-    if mod:
-        mod = mod.group()[1:]
-        sides = sides.replace(mod, '')
-    count = 1 if not count else int(count)
-    sides = int(sides)
-
-    for i in range(count):
-        result += random.randint(1,sides)
-
-    return eval(f'{result}{mod}')
+def roll_die(dice):
+    results = [[random.randint(1, int(d[1])) for rolls in range(int(d[0] or 1))] for d in [die.split('d') for die in dice.split()]]
+    return results
 
 def gen_phys(race):
     score = roll_die(races[race]['height_mod'])
@@ -65,7 +53,7 @@ async def on_message(message):
         return
 
     res = roll_die('d100')
-    if res == 1 and len(message.content.split()) >= 3:
+    if res[0][0] == 1 and len(message.content.split()) >= 3:
         await message.channel.send(' '.join(message.content.split()[-3:]))
 
     await client.process_commands(message)
@@ -73,20 +61,8 @@ async def on_message(message):
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.split()[1:]
-    roll_results = []
-    error = False
-    for die in dice:
-        try:
-            result = roll_die(die)
-            roll_results.append(str(result))
-        except Exception as e:
-            error = True
-            roll_results.append(die)
-    
-    if roll_results:
-        await ctx.send(' '.join(roll_results))
-    if error:
-        await ctx.send("Could not parse some dice.")
+    results = roll_die(' '.join(dice))
+    await ctx.send('\n'.join([f'{sum(rolls)}: {rolls}' for rolls in results]))
 
 @client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
