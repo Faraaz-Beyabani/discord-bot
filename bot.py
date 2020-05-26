@@ -14,14 +14,17 @@ load_dotenv()
 client = Bot(command_prefix = '=', case_insensitive=True)
 token = os.environ['BOT_TOKEN']
 
+
 with open('./data/races.json') as f:
     races = json.load(f)
 with open('./data/jobs.json') as f:
     jobs = json.load(f)
 
+
 def roll_die(dice):
-    results = [sorted([random.randint(1, int(sides)) for rolls in range(int(count or 1))])[::-1] for count, sides in [die.split('d') for die in dice.split()]]
+    results = [sorted([random.randint(1, int(sides or 20)) for rolls in range(int(count or 1))])[::-1] for count, sides in [die.split('d') for die in dice.split()]]
     return results
+
 
 @client.event
 async def on_ready():
@@ -29,6 +32,7 @@ async def on_ready():
         print('Discord.py Version: {}'.format(discord.__version__))
     except Exception as e:
         print(e)
+
 
 @client.event
 async def on_message(message):
@@ -45,6 +49,7 @@ async def on_message(message):
 
     await client.process_commands(message)
 
+
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
@@ -52,9 +57,11 @@ async def roll(ctx):
     result_message = '\n\n'.join([f'+ {sum(rolls)}\n  {"  ".join([str(num) for num in rolls])}' for rolls in results])
     await ctx.send(f'```diff\n{result_message}```')
 
+
 @client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
     await ctx.send(random.choice(['heads', 'tails']))
+
 
 @client.command(pass_context=True, aliases=['c'])
 async def choose(ctx):
@@ -67,6 +74,28 @@ async def choose(ctx):
     except Exception as e:
         print(e)
         await ctx.send("Error choosing a user; this command does not work in DMs.")
+
+
+@client.command(pass_context=True)
+async def archive(ctx):
+    channel = ctx.channel
+    filename = f'./data/{channel}.txt'
+    await ctx.send(f'Archiving channel {channel}...')
+    with ctx.typing():
+        with open(filename, 'w') as f:
+            async for message in ctx.history(limit=None, oldest_first=True):
+                f.write(message.author.name + '\n')
+                if message.content:
+                    f.write(message.content + '\n')
+                if message.attachments:
+                    f.write(message.attachments[0].url + '\n')
+                f.write('\n')
+        log_file = open(filename, 'rb')
+        await client.get_channel(708532851188170845).send(file=File(fp=log_file, filename=f'{channel}.txt'))
+        await ctx.send(f"Done! Archive of <#{channel.id}> created at <#708532851188170845>.")
+        log_file.close()
+    os.remove(filename)
+
 
 @client.command(pass_context=True)
 async def npc(ctx):
@@ -122,24 +151,5 @@ async def npc(ctx):
 
     await ctx.send(name)
 
-@client.command(pass_context=True)
-async def archive(ctx):
-    channel = ctx.channel
-    filename = f'./data/{channel}.txt'
-    await ctx.send(f'Archiving channel {channel}...')
-    with ctx.typing():
-        with open(filename, 'w') as f:
-            async for message in ctx.history(limit=None, oldest_first=True):
-                f.write(message.author.name + '\n')
-                if message.content:
-                    f.write(message.content + '\n')
-                if message.attachments:
-                    f.write(message.attachments[0].url + '\n')
-                f.write('\n')
-        log_file = open(filename, 'rb')
-        await client.get_channel(708532851188170845).send(file=File(fp=log_file, filename=f'{channel}.txt'))
-        await ctx.send(f"Done! Archive of <#{channel.id}> created at <#708532851188170845>.")
-        log_file.close()
-    os.remove(filename)
 
 client.run(token)
