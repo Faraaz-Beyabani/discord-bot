@@ -23,7 +23,7 @@ with open('./assets/data/jobs.json') as f:
     jobs = json.load(f)
 
 def roll_die(dice):
-    results = [[random.randint(1, int(d[1])) for rolls in range(int(d[0] or 1))] for d in [die.split('d') for die in dice.split()]]
+    results = [sorted([random.randint(1, int(sides)) for rolls in range(int(count or 1))])[::-1] for count, sides in [die.split('d') for die in dice.split()]]
     return results
 
 def gen_phys(race):
