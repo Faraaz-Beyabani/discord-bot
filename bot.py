@@ -4,7 +4,7 @@ import random
 import json
 
 import discord
-from discord import Activity, ActivityType, File
+from discord import File, Status
 from discord.ext.commands import Bot
 
 from dotenv import load_dotenv
@@ -65,6 +65,18 @@ async def roll(ctx):
 @client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
     await ctx.send(random.choice(['heads', 'tails']))
+
+@client.command(pass_context=True, aliases=['c'])
+async def choose(ctx):
+    try:
+        members = [m for m in ctx.guild.members if not m.bot]
+        if 'all' in ctx.message.content.lower():
+            await ctx.send((random.choice(members)).nick)
+        else:
+            await ctx.send((random.choice([m for m in members if m.status == Status.online])).nick)
+    except Exception as e:
+        print(e)
+        await ctx.send("Error choosing a user; this command does not work in DMs.")
 
 @client.command(pass_context=True)
 async def npc(ctx):
