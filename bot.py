@@ -59,8 +59,8 @@ async def on_message(message):
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
     results = roll_die(' '.join(dice))
-    result_message = '\n'.join([f'{sum(rolls)} | {"  ".join([str(num) for num in rolls])}' for rolls in results])
-    await ctx.send(f'```{result_message}```')
+    result_message = '\n\n'.join([f'+ {sum(rolls)}\n  {"  ".join([str(num) for num in rolls])}' for rolls in results])
+    await ctx.send(f'```diff\n{result_message}```')
 
 @client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
