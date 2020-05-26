@@ -23,16 +23,6 @@ def roll_die(dice):
     results = [sorted([random.randint(1, int(sides)) for rolls in range(int(count or 1))])[::-1] for count, sides in [die.split('d') for die in dice.split()]]
     return results
 
-def gen_phys(race):
-    score = roll_die(races[race]['height_mod'])
-    height = races[race]['height'] + score
-    weight = races[race]['weight'] + score * roll_die(races[race]['weight_mod'])
-
-    feet = height // 12
-    inches = height % 12
-
-    return f'. {feet}\'{inches}" {weight} lbs.'
-
 @client.event
 async def on_ready():
     try:
@@ -129,8 +119,6 @@ async def npc(ctx):
 
     if ',' in message:
         name += f', {random.choice(jobs).capitalize()}'
-    if '.' in message:
-        name += gen_phys(race)
 
     await ctx.send(name)
 
