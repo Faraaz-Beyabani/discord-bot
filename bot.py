@@ -2,19 +2,16 @@ import os
 import re
 import random
 import json
-import time
-import asyncio
 
 import discord
 from discord import Activity, ActivityType, File
-from discord.ext import commands
 from discord.ext.commands import Bot
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = commands.Bot(command_prefix = '=', case_insensitive=True)
+client = Bot(command_prefix = '=', case_insensitive=True)
 token = os.environ['BOT_TOKEN']
 
 with open('./assets/data/races.json') as f:
@@ -62,7 +59,8 @@ async def on_message(message):
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
     results = roll_die(' '.join(dice))
-    await ctx.send('\n'.join([f'{sum(rolls)}: {rolls}' for rolls in results]))
+    result_message = '\n'.join([f'{sum(rolls)} | {"  ".join([str(num) for num in rolls])}' for rolls in results])
+    await ctx.send(f'```{result_message}```')
 
 @client.command(pass_context=True, aliases=['f'])
 async def flip(ctx):
@@ -99,7 +97,6 @@ async def npc(ctx):
         num = random.randint(1, 2)
     else:
         await ctx.send("Could not parse the given race.")
-        print(race)
         return
 
     if not choices:
@@ -124,26 +121,6 @@ async def npc(ctx):
         name += gen_phys(race)
 
     await ctx.send(name)
-
-@client.command(pass_context=True, aliases=['rem'])
-async def remind(ctx):
-    text = ctx.message.content
-    time_text = text.split()[1]
-    reminder = ' '.join(text.split()[2:])
-
-    h, m, s = re.search(r'\d*h', time_text), re.search(r'\d*m', time_text), re.search(r'\d*s', time_text)
-    seconds = 0 + (h and int(h.group()[:-1]) * 3600 or 0)
-    seconds += m and int(m.group()[:-1]) * 60 or 0
-    seconds += s and int(s.group()[:-1]) or 0
-
-    if not reminder or seconds == 0:
-        await ctx.send('An empty message or invalid time was entered.')
-        return
-
-    await ctx.send('Reminder set.')
-
-    await asyncio.sleep(seconds)
-    await ctx.send(f'{ctx.message.author.mention} {reminder}')
 
 @client.command(pass_context=True)
 async def archive(ctx):
