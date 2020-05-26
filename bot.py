@@ -14,9 +14,9 @@ load_dotenv()
 client = Bot(command_prefix = '=', case_insensitive=True)
 token = os.environ['BOT_TOKEN']
 
-with open('./assets/data/races.json') as f:
+with open('./data/races.json') as f:
     races = json.load(f)
-with open('./assets/data/jobs.json') as f:
+with open('./data/jobs.json') as f:
     jobs = json.load(f)
 
 def roll_die(dice):
@@ -137,7 +137,7 @@ async def npc(ctx):
 @client.command(pass_context=True)
 async def archive(ctx):
     channel = ctx.channel
-    filename = f'./assets/data/{channel}.txt'
+    filename = f'./data/{channel}.txt'
     await ctx.send(f'Archiving channel {channel}...')
     with ctx.typing():
         with open(filename, 'w') as f:
