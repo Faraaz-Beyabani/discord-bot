@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = commands.Bot(command_prefix = '=')
+client = commands.Bot(command_prefix = '=', case_insensitive=True)
 token = os.environ['BOT_TOKEN']
 
 with open('./assets/data/races.json') as f:
@@ -60,7 +60,7 @@ async def on_message(message):
 
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
-    dice = ctx.message.content.split()[1:]
+    dice = ctx.message.content.lower().split()[1:]
     results = roll_die(' '.join(dice))
     await ctx.send('\n'.join([f'{sum(rolls)}: {rolls}' for rolls in results]))
 
