@@ -102,16 +102,18 @@ async def archive(ctx):
 async def scrub(ctx):
     channel = ctx.channel
     try:
-        time_limit = int(ctx.message.content)
+        time_limit = int(ctx.message.content.split()[1])
     except:
-        ctx.send("Invalid parameter.")
+        await ctx.send("Invalid parameter.")
+        return
     await ctx.send(f'Scrubbing channel {channel}...')
     with ctx.typing():
         async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.datetime.now() - datetime.timedelta(minutes = time_limit))):
             try:
                 await message.delete()
             except:
-                ctx.send("Not enough permissions to scrub.")
+                await ctx.send("Not enough permissions to scrub.")
+                return
         await ctx.send(f"Done! Scrubbing of <#{channel.id}> finished.")
 
 
