@@ -107,7 +107,7 @@ async def scrub(ctx):
         ctx.send("Invalid parameter.")
     await ctx.send(f'Scrubbing channel {channel}...')
     with ctx.typing():
-        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.datetime.now() - datetime.timedelta(minutes = 5))):
+        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.datetime.now() - datetime.timedelta(minutes = time_limit))):
             try:
                 await message.delete()
             except:
