@@ -2,6 +2,7 @@ import os
 import re
 import random
 import json
+import datetime
 
 import discord
 from discord import File, Status
@@ -95,6 +96,23 @@ async def archive(ctx):
         await ctx.send(f"Done! Archive of <#{channel.id}> created at <#708532851188170845>.")
         log_file.close()
     os.remove(filename)
+
+
+@client.command(pass_context=True)
+async def scrub(ctx):
+    channel = ctx.channel
+    try:
+        time_limit = int(ctx.message.content)
+    except:
+        ctx.send("Invalid parameter.")
+    await ctx.send(f'Scrubbing channel {channel}...')
+    with ctx.typing():
+        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.datetime.now() - datetime.timedelta(minutes = 5))):
+            try:
+                await message.delete()
+            except:
+                ctx.send("Not enough permissions to scrub.")
+        await ctx.send(f"Done! Scrubbing of <#{channel.id}> finished.")
 
 
 @client.command(pass_context=True)
