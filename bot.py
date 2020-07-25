@@ -40,7 +40,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if 'worgen' in message.content.lower():
+    if message.author.id == 300061459864616962:
         await message.delete()
         return
 
