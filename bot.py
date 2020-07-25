@@ -40,6 +40,10 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    if 'worgen' in message.content.lower():
+        await message.delete()
+        return
+
     if message.channel.id == 710664883661963306:
         await message.channel.send(message.content)
         return
