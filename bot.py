@@ -40,10 +40,6 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.author.id == 300061459864616962 and 'w' in message.content.lower():
-        await message.delete()
-        return
-
     if message.channel.id == 710664883661963306:
         await message.channel.send(message.content)
         return
