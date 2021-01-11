@@ -22,9 +22,40 @@ with open('./data/jobs.json') as f:
     jobs = json.load(f)
 
 
-def roll_die(dice):
-    results = [sorted([random.randint(1, int(sides or 20)) for rolls in range(int(count or 1))])[::-1] for count, sides in [die.split('d') for die in dice.split()]]
-    return results
+def roll_dice(dice):
+    total_results = []
+
+    for die in dice:
+        parsed_die = re.search(r'(\d*)d(\d+)([\+\-]\d+)?', die)
+
+        if not parsed_die:
+            return None
+
+        num_dice = parsed_die[1]
+        sides    = parsed_die[2]
+        modifier = parsed_die[3]
+
+        sides = int(sides)
+        num_dice = num_dice and int(num_dice) or 1
+
+        if sides > 100 or num_dice > 100:
+            return None
+
+        roll_results = [0]
+
+        for i in range(num_dice):
+            roll = random.randint(1, sides)
+
+            roll_results.append(roll)
+            roll_results[0] += roll
+
+        if modifier:
+            roll_results.append(modifier)
+            roll_results[0] += int(modifier)
+
+        total_results.append(roll_results)
+
+    return total_results
 
 
 @client.event
@@ -40,11 +71,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.channel.id == 710664883661963306:
-        await message.channel.send(message.content)
-        return
-
-    res = roll_die('d100')
+    res = roll_dice('d100')
     if res[0][0] == 1 and len(message.content.split()) >= 3:
         await message.channel.send(' '.join(message.content.split()[-3:]))
 
@@ -54,8 +81,8 @@ async def on_message(message):
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
-    results = roll_die(' '.join(dice))
-    result_message = '\n\n'.join([f'+ {sum(rolls)}\n  {"  ".join([str(num) for num in rolls])}' for rolls in results])
+    results = roll_dice(dice)
+    result_message = '\n\n'.join([f'+ {rolls[0]}\n  {"  ".join([str(num) for num in rolls[1:]])}' for rolls in results])
     await ctx.send(f'```diff\n{result_message}```')
 
 
