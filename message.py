@@ -1,13 +1,13 @@
 import requests
 import json
 import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 if __name__ == "__main__":
-    # load_dotenv()
+    load_dotenv()
 
     channelID = "610914973853679648"
-    botToken = 'NjgwOTA5Njc3NjM0MTI1ODI2.XlGx8A.iBzAHGwdH6VjljE8w7A8saJBQDA'
+    botToken = os.environ['BOT_TOKEN']
 
     baseURL = "https://discordapp.com/api/channels/{}/messages".format(channelID)
     headers = { "Authorization":"Bot {}".format(botToken),
