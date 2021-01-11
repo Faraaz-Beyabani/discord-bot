@@ -71,7 +71,7 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    res = roll_dice('d100')
+    res = roll_dice(['d100'])
     if res[0][0] == 1 and len(message.content.split()) >= 3:
         await message.channel.send(' '.join(message.content.split()[-3:]))
 
@@ -82,7 +82,7 @@ async def on_message(message):
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
     results = roll_dice(dice)
-    result_message = '\n\n'.join([f'+ {rolls[0]}\n  {"  ".join([str(num) for num in rolls[1:]])}' for rolls in results])
+    result_message = '\n\n'.join([f'+ {rolls[0]}\n  {"  ".join([str(num) for num in sorted(rolls[1:])])}' for rolls in results])
     await ctx.send(f'```diff\n{result_message}```')
 
 
