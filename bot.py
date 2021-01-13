@@ -4,8 +4,11 @@ import random
 import json
 from datetime import datetime, timedelta
 
+import requests
+from bs4 import BeautifulSoup
+
 import discord
-from discord import File, Status
+from discord import File, Status, Embed
 from discord.ext.commands import Bot
 
 from dotenv import load_dotenv
@@ -116,6 +119,9 @@ async def on_message(message):
     await client.process_commands(message)
 
 
+
+
+
 @client.command(pass_context=True, aliases=['r'])
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
@@ -180,6 +186,31 @@ async def scrub(ctx):
                 await ctx.send("Not enough permissions to scrub.")
                 return
         await ctx.send(f"Done! Scrubbing of <#{channel.id}> finished.")
+
+
+@client.command(pass_context=True)
+async def dnd(ctx):
+    query = ctx.message.content.split()[1:]
+    category = query[0]
+
+    if len(query) > 1:
+        subcategory = ':' + '-'.join(query[1:])
+
+    url = f'http://dnd5e.wikidot.com/{category}{subcategory}'
+    site = requests.get(url)
+    soup = BeautifulSoup(site.content, "html.parser")
+
+    spell = soup.find_all("div", class_="main-content")[0]
+    name = spell.find(class_='page-title').string
+    desc = spell.find(id='page-content').get_text().split('\n')
+    desc = [d for d in desc if d]
+
+    embed = Embed()
+    embed.url=url
+    embed.title=name
+    embed.description='\n\n'.join(desc)
+
+    await ctx.send(embed=embed)
 
 
 @client.command(pass_context=True)
