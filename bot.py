@@ -2,7 +2,7 @@ import os
 import re
 import random
 import json
-import datetime
+from datetime import datetime, timedelta
 
 import discord
 from discord import File, Status
@@ -57,6 +57,33 @@ def roll_dice(dice):
 
     return total_results
 
+async def check_repost(guild, content, time):
+    gen_channels = [610914973853679648,
+                    691100088004771910,
+                    404105660184264714,
+                    616426939267284995,
+                    608799459014475938,
+                    717099200592085034]
+
+    for chan_id in gen_channels:
+        channel = guild.get_channel(chan_id)
+        time_limit = time - timedelta(hours=36)
+
+        async for message in channel.history(limit=None, before=time, after=time_limit):
+            if isinstance(content, discord.Embed):
+                for e in message.embeds:
+                    if e.url == content.url:
+                        return message
+            else:
+                for a in message.attachments:
+                    if a.filename == content.filename:
+                        return message
+
+
+
+
+
+
 
 @client.event
 async def on_ready():
@@ -70,6 +97,17 @@ async def on_ready():
 async def on_message(message):
     if message.author.bot:
         return
+
+    if message.attachments or message.embeds:
+        content = message.embeds[0] if message.embeds else message.attachments[0]
+        original_msg = await check_repost(message.guild, content, message.created_at)
+
+        if original_msg:
+            await message.delete()
+            reply = f"{message.author.mention}, this content was already sent by " \
+                    f"{original_msg.author} on {original_msg.created_at} at {original_msg.jump_url}"
+
+            await message.channel.send(reply)
 
     res = roll_dice(['d100'])
     if res[0][0] == 1 and len(message.content.split()) >= 3:
@@ -135,7 +173,7 @@ async def scrub(ctx):
         return
     await ctx.send(f'Scrubbing channel {channel}...')
     with ctx.typing():
-        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.datetime.now() - datetime.timedelta(minutes = time_limit))):
+        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.now() - timedelta(minutes = time_limit))):
             try:
                 await message.delete()
             except:
