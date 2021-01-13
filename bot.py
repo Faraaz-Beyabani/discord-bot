@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 
 import discord
-from discord import File, Status, Embed
+from discord import File, Status, Embed, Color
 from discord.ext.commands import Bot
 
 from dotenv import load_dotenv
@@ -77,10 +77,19 @@ async def check_repost(guild, content, time):
                 for e in message.embeds:
                     if e.url == content.url:
                         return message
-            else:
-                for a in message.attachments:
-                    if a.filename == content.filename:
-                        return message
+
+def str_to_color(string):
+    hashed = 0
+
+    for c in string:
+        hashed = ord(c) + ((hashed << 5) - hashed)
+
+    color = ''
+    for i in range(3):
+        value = (hashed >> (i * 8)) & 0xFF
+        color += format(value, '02X')
+
+    return int(color, 16)
 
 
 
@@ -101,8 +110,9 @@ async def on_message(message):
     if message.author.bot:
         return
 
-    if message.attachments or message.embeds:
-        content = message.embeds[0] if message.embeds else message.attachments[0]
+    if message.embeds:
+        content = message.embeds[0]
+
         original_msg = await check_repost(message.guild, content, message.created_at)
 
         if original_msg:
@@ -203,12 +213,30 @@ async def dnd(ctx):
     spell = soup.find_all("div", class_="main-content")[0]
     name = spell.find(class_='page-title').string
     desc = spell.find(id='page-content').get_text().split('\n')
+    attrs = ['Casting Time', 'Range', 'Components', 'Duration']
+
     desc = [d for d in desc if d]
+
+    color = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', desc[1])[1]
+
+    combined_attrs = []
+
+    for d in desc:
+        for a in attrs:
+            if a in d:
+                combined_attrs.append(d.replace(a, f'**{a}**'))
+
+    combined_attrs = '\n'.join(combined_attrs)
+    desc = desc[:3] + desc[6:]
+    desc[2] = combined_attrs
+
+    em_color = str_to_color(color.lower())
 
     embed = Embed()
     embed.url=url
     embed.title=name
     embed.description='\n\n'.join(desc)
+    embed.color=em_color
 
     await ctx.send(embed=embed)
 
