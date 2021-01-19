@@ -212,9 +212,13 @@ async def dnd(ctx):
 
     spell = soup.find_all("div", class_="main-content")[0]
     name = spell.find(class_='page-title').string
-    desc = spell.find(id='page-content').get_text().split('\n')
+    desc = spell.find(id='page-content')
     attrs = ['Casting Time', 'Range', 'Components', 'Duration']
 
+    for table in desc.find_all('table'):
+        table.decompose()
+
+    desc = desc.get_text().split('\n')
     desc = [d for d in desc if d]
 
     color = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', desc[1])[1]
@@ -230,70 +234,34 @@ async def dnd(ctx):
     desc = desc[:3] + desc[6:]
     desc[2] = combined_attrs
 
+    misc = desc[0:3] + desc[-1:]
+    desc = desc[3:-1]
+
+    limit_desc = []
+    curr_len = 0
+    for d in desc:
+        curr_len += len(d)
+        if curr_len <= 2048:
+            limit_desc.append(d)
+        else:
+            break
+
+    if desc != limit_desc:
+        limit_desc.append("*View online for more info.*")
+
     em_color = str_to_color(color.lower())
 
     embed = Embed()
     embed.url=url
     embed.title=name
-    embed.description='\n\n'.join(desc)
+    embed.add_field(name="Source", value=misc[0])
+    embed.add_field(name="Level", value=misc[1])
+    embed.add_field(name="Statistics", value=misc[2])
+    embed.add_field(name="Lists", value=misc[3])
+    embed.description = "\n\n".join(limit_desc)
     embed.color=em_color
 
     await ctx.send(embed=embed)
-
-
-@client.command(pass_context=True)
-async def npc(ctx):
-    message = ctx.message.content
-
-    name = ''
-    choices = []
-    height = 0
-    weight = 0
-    try:
-        race = (re.search(r' [a-zA-Z]+', message)).group()[1:]
-    except:
-        await ctx.send("Could not find a race in your message.")
-        return
-
-    if race == 'worgen':
-        await ctx.send("...Did you actually just try to do that?")
-        return
-
-    if race == 'halfelf':
-        num = random.randint(2, 4)
-        choices = races['elf']['names'] + races['human']['names']
-    elif race in ['elf', 'gnome']:
-        num = random.randint(2, 4)
-    elif race in ['human', 'dragonborn', 'dwarf']:
-        num = random.randint(2, 3)
-    elif race in ['halfling', 'tiefling']:
-        num = 2
-    elif race == 'orc':
-        num = random.randint(1, 2)
-    else:
-        await ctx.send("Could not parse the given race.")
-        return
-
-    if not choices:
-        choices = races[race]['names']
-
-    if not name:
-        for i in range(num):
-            part = random.choice(choices)
-            while part in name:
-                part = random.choice(choices)
-            name += part
-
-    match = re.search(r'(a|e|i|o|u)\1+', name)
-    if match:
-        name = re.sub(match.group(), match.group()[0]*2, name)
-
-    name = name.capitalize()
-
-    if ',' in message:
-        name += f', {random.choice(jobs).capitalize()}'
-
-    await ctx.send(name)
 
 
 client.run(token)
