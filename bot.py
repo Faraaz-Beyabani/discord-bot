@@ -98,8 +98,9 @@ def scrape_site(url):
     return soup
 
 def fetch_spell(soup, url):
-    stats = {'Casting Time':"", 'Range':"", 'Components':"", 'Duration':"", 
-             'Source':"", 'Level':"", 'Lists':""}
+    stats = {'Level':"", 'Details':"", 'Casting Time':"", 'Range':"", 'Components':"", 'Duration':"", 
+             'Source':"", 'Spell Lists':""}
+    spell_attrs = ['Casting Time', 'Range', 'Components', 'Duration']
 
     spell = soup.find_all("div", class_="main-content")[0]
 
@@ -112,6 +113,7 @@ def fetch_spell(soup, url):
     desc = desc.get_text().split('\n')
     cleaned_desc = []
     cleaned_len = 0
+    desc_finished = False
 
     for d in desc:
         if not d:
@@ -119,23 +121,29 @@ def fetch_spell(soup, url):
 
         if not all(v for v in stats.values()):
             for s in stats.keys():
-                if s in d and not stats[s]:
+                if s.lower() in d.lower() and not stats[s]:
                     stats[s] = d
                     break
                 elif s == 'Level' and 'cantrip' in d:
                     stats[s] = d
                     break
             else:
+                if desc_finished:
+                    continue
+
                 if cleaned_len + len(d) <= 2048:
                     cleaned_desc.append(d)
                     cleaned_len += len(d)
-                
-    if not stats['Level']:
-        stats['Level'] = cleaned_desc[0]
-        cleaned_desc = cleaned_desc[1:]
+                elif not desc_finished:
+                    desc_finished = True
+                    cleaned_desc.append(f'[View online for more details.]({url})')
 
     color_search = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', stats['Level'])[1]
     color = str_to_color(color_search.lower())
+
+    for a in spell_attrs:
+        stats['Details'] += stats[a] + '\n'
+        del stats[a]
 
     return name, cleaned_desc, color, stats
 
@@ -275,7 +283,7 @@ async def dnd(ctx):
     embed.color=color
 
     for k, v in misc.items():
-        embed.add_field(name=k, value=v)
+        embed.add_field(name=k, value=v, inline=False)
 
     await ctx.send(embed=embed)
 
