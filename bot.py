@@ -98,53 +98,50 @@ def scrape_site(url):
     return soup
 
 def fetch_spell(soup, url):
-    attrs = ['Casting Time', 'Range', 'Components', 'Duration']
+    stats = {'Casting Time':"", 'Range':"", 'Components':"", 'Duration':"", 
+             'Source':"", 'Level':"", 'Lists':""}
+
     spell = soup.find_all("div", class_="main-content")[0]
 
     name = spell.find(class_='page-title').string
-
-    ######################
-
     desc = spell.find(id='page-content')
 
     for table in desc.find_all('table'):
         table.decompose()
 
     desc = desc.get_text().split('\n')
-    desc = [d for d in desc if d]
-
-    combined_attrs = []
+    cleaned_desc = []
+    cleaned_len = 0
 
     for d in desc:
-        for a in attrs:
-            if a in d:
-                combined_attrs.append(d.replace(a, f'**{a}**'))
+        if not d:
+            continue
 
-    combined_attrs = '\n'.join(combined_attrs)
-    desc = desc[:3] + desc[6:]
-    desc[2] = combined_attrs
+        if not all(v for v in stats.values()):
+            for s in stats.keys():
+                if s in d and not stats[s]:
+                    stats[s] = d
+                    break
+                elif s == 'Level' and 'cantrip' in d:
+                    stats[s] = d
+                    break
+            else:
+                if cleaned_len + len(d) <= 2048:
+                    cleaned_desc.append(d)
+                    cleaned_len += len(d)
+                
+    if not stats['Level']:
+        stats['Level'] = cleaned_desc[0]
+        cleaned_desc = cleaned_desc[1:]
 
-    misc = desc[0:3] + desc[-1:]
-    desc = desc[3:-1]
+    color_search = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', stats['Level'])[1]
+    color = str_to_color(color_search.lower())
 
-    limit_desc = []
-    curr_len = 0
-    for d in desc:
-        curr_len += len(d)
-        if curr_len <= 2048:
-            limit_desc.append(d)
-        else:
-            break
+    return name, cleaned_desc, color, stats
 
-    if desc != limit_desc:
-        limit_desc.append(f"[*View online for more info.*]({url})")
+def fetch_feature(soup, url):
+    return "Work In Progress", [], 16711680, {}
 
-    ###########################
-
-    color = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', misc[1])[1]
-    em_color = str_to_color(color.lower())
-
-    return name, limit_desc, em_color, misc
 
 
 
@@ -274,12 +271,11 @@ async def dnd(ctx):
     embed = Embed()
     embed.url=url
     embed.title=name
-    embed.add_field(name="Source", value=misc[0])
-    embed.add_field(name="Level", value=misc[1])
-    embed.add_field(name="Statistics", value=misc[2])
-    embed.add_field(name="Lists", value=misc[3])
     embed.description = "\n\n".join(desc)
     embed.color=color
+
+    for k, v in misc.items():
+        embed.add_field(name=k, value=v)
 
     await ctx.send(embed=embed)
 
