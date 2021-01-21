@@ -29,7 +29,7 @@ def roll_dice(dice):
     total_results = []
 
     for die in dice:
-        parsed_die = re.search(r'(\d*)d(\d+)([\+\-]\d+)?', die)
+        parsed_die = re.search(r'(\d*)[dD](\d+)([\+\-]\d+)?', die)
 
         if not parsed_die:
             return None
@@ -161,6 +161,8 @@ async def on_ready():
     except Exception as e:
         print(e)
 
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name="for =help"))
+
 
 @client.event
 async def on_message(message):
@@ -189,11 +191,10 @@ async def on_message(message):
 @client.command(
     pass_context=True, 
     aliases=['r'],
-    help="=roll <dice...>\nEx: =roll 1d6 2d4+2 d20-1",
+    help="Ex: =roll 1d6 2d4+2 d20-1",
     brief="Roll various numbers of dice"
 )
-async def roll(ctx):
-    dice = ctx.message.content.lower().split()[1:]
+async def roll(ctx, *dice):
     results = roll_dice(dice)
 
     if not results:
@@ -207,7 +208,7 @@ async def roll(ctx):
 @client.command(
     pass_context=True, 
     aliases=['f'],
-    help="=flip",
+    help="Returns heads or tails.",
     brief="Flip a coin"
 )
 async def flip(ctx):
@@ -217,16 +218,16 @@ async def flip(ctx):
 @client.command(
     pass_context=True, 
     aliases=['c'],
-    help="=choose (all)\nUse the all keyword to choose from offline members, too.",
+    help="Use the all keyword to choose from offline members, too.",
     brief="Choose a random online human from the server"
 )
-async def choose(ctx):
+async def choose(ctx, all=False):
     try:
         members = [m for m in ctx.guild.members if not m.bot]
-        if 'all' in ctx.message.content.lower():
+        if all.lower() == 'all':
             await ctx.send((random.choice(members)).nick)
         else:
-            await ctx.send((random.choice([m for m in members if m.status == Status.online])).nick)
+            await ctx.send("Choosing " + (random.choice([m for m in members if m.status == Status.online])).nick)
     except Exception as e:
         print(e)
         await ctx.send("Error choosing a user; this command does not work in DMs.")
@@ -234,7 +235,7 @@ async def choose(ctx):
 
 @client.command(
     pass_context=True,
-    help="=archive\nSends all text messages (and some links) in a text file.",
+    help="Sends all text messages (and some links) in a text file.",
     brief="Archive the current channel"
 )
 async def archive(ctx):
@@ -259,19 +260,14 @@ async def archive(ctx):
 
 @client.command(
     pass_context=True,
-    help="=scrub <minutes>\nEx: =scrub 3\nThis command requires the 'Manage Messages' permission.",
+    help="Deletes all messages sent in the last <minutes> minutes. This command requires the 'Manage Messages' permission.",
     brief="Delete messages from a channel"
 )
-async def scrub(ctx):
+async def scrub(ctx, minutes: int):
     channel = ctx.channel
-    try:
-        time_limit = int(ctx.message.content.split()[1])
-    except:
-        await ctx.send("Please provide the number of minutes to erase.")
-        return
     await ctx.send(f'Scrubbing channel {channel}...')
     with ctx.typing():
-        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.now() - timedelta(minutes = time_limit))):
+        async for message in ctx.history(limit=None, oldest_first=True, after=(datetime.now() - timedelta(minutes=minutes))):
             try:
                 await message.delete()
             except:
@@ -282,19 +278,16 @@ async def scrub(ctx):
 
 @client.command(
     pass_context=True,
-    help="=dnd spell <spell name>",
+    help="Category can be 'spell' or a class name. Query is the name of a spell or class feature.",
     brief="Search a D&D wiki"
 )
-async def dnd(ctx):
-    split = ctx.message.content.split()[1:]
-    category = split[0]
-    query = split[1:]
+async def dnd(ctx, category, *, query):
 
     if len(query) == 0:
         await ctx.send("Please provide a spell or feature name.")
         return
     
-    subcategory = ':' + '-'.join(query)
+    subcategory = ':' + '-'.join(query.split())
 
     url = f'http://dnd5e.wikidot.com/{category}{subcategory}'
     soup = scrape_site(url)
