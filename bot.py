@@ -186,24 +186,40 @@ async def on_message(message):
     await client.process_commands(message)
 
 
-
-
-
-
-@client.command(pass_context=True, aliases=['r'])
+@client.command(
+    pass_context=True, 
+    aliases=['r'],
+    help="=roll <dice...>\nEx: =roll 1d6 2d4+2 d20-1",
+    brief="Roll various numbers of dice"
+)
 async def roll(ctx):
     dice = ctx.message.content.lower().split()[1:]
     results = roll_dice(dice)
+
+    if not results:
+        await ctx.send("Couldn't parse the request. Please make sure you don't have more than 100 dice or 100 sides.")
+        return
+
     result_message = '\n\n'.join([f'+ {rolls[0]}\n  {"  ".join([str(num) for num in rolls[1:]])}' for rolls in results])
     await ctx.send(f'```diff\n{result_message}```')
 
 
-@client.command(pass_context=True, aliases=['f'])
+@client.command(
+    pass_context=True, 
+    aliases=['f'],
+    help="=flip",
+    brief="Flip a coin"
+)
 async def flip(ctx):
     await ctx.send(random.choice(['heads', 'tails']))
 
 
-@client.command(pass_context=True, aliases=['c'])
+@client.command(
+    pass_context=True, 
+    aliases=['c'],
+    help="=choose (all)\nUse the all keyword to choose from offline members, too.",
+    brief="Choose a random online human from the server"
+)
 async def choose(ctx):
     try:
         members = [m for m in ctx.guild.members if not m.bot]
@@ -216,7 +232,11 @@ async def choose(ctx):
         await ctx.send("Error choosing a user; this command does not work in DMs.")
 
 
-@client.command(pass_context=True)
+@client.command(
+    pass_context=True,
+    help="=archive\nSends all text messages (and some links) in a text file.",
+    brief="Archive the current channel"
+)
 async def archive(ctx):
     channel = ctx.channel
     filename = f'./data/{channel}.txt'
@@ -231,19 +251,23 @@ async def archive(ctx):
                     f.write(message.attachments[0].url + '\n')
                 f.write('\n')
         log_file = open(filename, 'rb')
-        await client.get_channel(708532851188170845).send(file=File(fp=log_file, filename=f'{channel}.txt'))
-        await ctx.send(f"Done! Archive of <#{channel.id}> created at <#708532851188170845>.")
+        await ctx.send(file=File(fp=log_file, filename=f'{channel}.txt'))
+        await ctx.send(f"Done! Archive of <#{channel.id}> created.")
         log_file.close()
     os.remove(filename)
 
 
-@client.command(pass_context=True)
+@client.command(
+    pass_context=True,
+    help="=scrub <minutes>\nEx: =scrub 3\nThis command requires the 'Manage Messages' permission.",
+    brief="Delete messages from a channel"
+)
 async def scrub(ctx):
     channel = ctx.channel
     try:
         time_limit = int(ctx.message.content.split()[1])
     except:
-        await ctx.send("Invalid parameter.")
+        await ctx.send("Please provide the number of minutes to erase.")
         return
     await ctx.send(f'Scrubbing channel {channel}...')
     with ctx.typing():
@@ -256,7 +280,11 @@ async def scrub(ctx):
         await ctx.send(f"Done! Scrubbing of <#{channel.id}> finished.")
 
 
-@client.command(pass_context=True)
+@client.command(
+    pass_context=True,
+    help="=dnd spell <spell name>",
+    brief="Search a D&D wiki"
+)
 async def dnd(ctx):
     split = ctx.message.content.split()[1:]
     category = split[0]
