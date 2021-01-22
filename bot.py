@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import requests
 from bs4 import BeautifulSoup
+from googlesearch import search
 
 import discord
 from discord import File, Status, Embed, Color
@@ -17,12 +18,6 @@ load_dotenv()
 
 client = Bot(command_prefix = '=', case_insensitive=True)
 token = os.environ['BOT_TOKEN']
-
-
-with open('./data/races.json') as f:
-    races = json.load(f)
-with open('./data/jobs.json') as f:
-    jobs = json.load(f)
 
 
 def roll_dice(dice):
@@ -147,8 +142,34 @@ def fetch_spell(soup, url):
 
     return name, cleaned_desc, color, stats
 
-def fetch_feature(soup, url):
-    return "Work In Progress", [], 16711680, {}
+def fetch_feature(soup, url, feature):
+
+    webpage = soup.find('span', text=re.compile(feature, re.I))
+    name = webpage.string
+
+    color = str_to_color(name.lower())
+
+    desc = []
+    desc_size = 0
+
+    webpage_iter = webpage.parent.find_next_sibling()
+
+    while webpage_iter:
+        if webpage_iter.name == 'h3':
+            break
+        elif webpage_iter.name == 'table':
+            continue
+        elif desc_size + len(webpage_iter.get_text()) <= 2048:
+            text = webpage_iter.get_text().strip()
+
+            desc_size += len(text)
+            desc.append(text)
+        else:
+            break
+
+        webpage_iter = webpage_iter.find_next_sibling()
+
+    return name, desc, color, {}
 
 
 
@@ -281,7 +302,7 @@ async def scrub(ctx, minutes: int):
     help="Category can be 'spell' or a class name. Query is the name of a spell or class feature.",
     brief="Search a D&D wiki"
 )
-async def dnd(ctx, category, *, query):
+async def dnd(ctx, *, query):
 
     if len(query) == 0:
         await ctx.send("Please provide a spell or feature name.")
@@ -289,13 +310,41 @@ async def dnd(ctx, category, *, query):
     
     subcategory = ':' + '-'.join(query.split())
 
-    url = f'http://dnd5e.wikidot.com/{category}{subcategory}'
+    url = list(search(f"site:dnd5e.wikidot.com {query}", num=1, stop=1, pause=0))[0]
     soup = scrape_site(url)
 
-    if category == 'spell':
-        name, desc, color, misc = fetch_spell(soup, url)
-    else:
-        name, desc, color, misc = fetch_feature(soup, url)
+    title = soup.find(class_="page-title").string.lower()
+
+    try:
+        if query.lower() == 'ability score improvement' or query.lower() == 'asi':
+            url = 'http://dnd5e.wikidot.com/'
+            name = 'Ability Score Improvement'
+            color = str_to_color(name)
+            desc = [
+                "For most classes: When you reach 4th level, 8th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1.",
+                "For Fighters: When you reach 4th level, and again at 6th, 8th, 12th, 14th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1.",
+                "For Rogues: When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1.",
+                "As normal, you can't increase an ability score above 20 using this feature."
+            ]
+            misc = {}
+        elif query.lower() == 'channel divinity' or query.lower() == 'cd':
+            url = 'http://dnd5e.wikidot.com/'
+            name = 'Channel Divinity'
+            color = str_to_color(name)
+            desc = [
+                "Clerics and paladins get different Channel Divinity options based on their subclass.",  
+                "View the class pages below for more details.",
+                "[Cleric](http://dnd5e.wikidot.com/cleric)",
+                "[Paladin](http://dnd5e.wikidot.com/paladin)"
+            ]
+            misc = {}
+        elif title == query:
+            name, desc, color, misc = fetch_spell(soup, url)
+        else:
+            name, desc, color, misc = fetch_feature(soup, url, query)
+    except Exception as e:
+        await ctx.send("Sorry, couldn't find that spell or class feature.")
+        return
 
     embed = Embed()
     embed.url=url
