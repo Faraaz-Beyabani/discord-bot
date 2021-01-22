@@ -160,7 +160,6 @@ def fetch_feature(soup, url, feature):
             break
         elif webpage_iter.name == 'table':
             more_info = True
-            continue
         elif desc_size + len(webpage_iter.get_text()) <= 2048:
             text = webpage_iter.get_text().strip()
 
@@ -255,7 +254,6 @@ async def choose(ctx, all=False):
         else:
             await ctx.send("Choosing " + (random.choice([m for m in members if m.status == Status.online])).nick)
     except Exception as e:
-        print(e)
         await ctx.send("Error choosing a user; this command does not work in DMs.")
 
 
@@ -354,7 +352,7 @@ async def dnd(ctx, *, query):
             desc = [
                 "Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.",
                 "For Fighters, the number of attacks increases to three when you reach 11th level in this class and to four when you reach 20th level in this class."
-            ],
+            ]
             misc = {}
         elif title == query:
             name, desc, color, misc = fetch_spell(soup, url)
