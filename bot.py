@@ -108,7 +108,7 @@ def fetch_spell(soup, url):
     desc = desc.get_text().split('\n')
     cleaned_desc = []
     cleaned_len = 0
-    desc_finished = False
+    more_info = False
 
     for d in desc:
         if not d:
@@ -123,15 +123,15 @@ def fetch_spell(soup, url):
                     stats[s] = d
                     break
             else:
-                if desc_finished:
-                    continue
-
                 if cleaned_len + len(d) <= 2048:
                     cleaned_desc.append(d)
                     cleaned_len += len(d)
-                elif not desc_finished:
-                    desc_finished = True
-                    cleaned_desc.append(f'[View online for more details.]({url})')
+                else:
+                    more_info = True
+                    break
+
+    if more_info:
+        cleaned_desc.append(f'[View online for more details.]({url})')
 
     color_search = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', stats['Level'])[1]
     color = str_to_color(color_search.lower())
@@ -151,6 +151,7 @@ def fetch_feature(soup, url, feature):
 
     desc = []
     desc_size = 0
+    more_info = False
 
     webpage_iter = webpage.parent.find_next_sibling()
 
@@ -158,6 +159,7 @@ def fetch_feature(soup, url, feature):
         if webpage_iter.name == 'h3':
             break
         elif webpage_iter.name == 'table':
+            more_info = True
             continue
         elif desc_size + len(webpage_iter.get_text()) <= 2048:
             text = webpage_iter.get_text().strip()
@@ -168,6 +170,9 @@ def fetch_feature(soup, url, feature):
             break
 
         webpage_iter = webpage_iter.find_next_sibling()
+
+    if more_info:
+        desc.append(f'[View online for more details.]({url})')
 
     return name, desc, color, {}
 
@@ -310,7 +315,11 @@ async def dnd(ctx, *, query):
     
     subcategory = ':' + '-'.join(query.split())
 
-    url = list(search(f"site:dnd5e.wikidot.com {query}", num=1, stop=1, pause=0))[0]
+    try:
+        url = list(search(f"site:dnd5e.wikidot.com {query}", num=1, stop=1, pause=0))[0]
+    except Exception as e:
+        await ctx.send("Sorry, couldn't find that spell or class feature.")
+        return
     soup = scrape_site(url)
 
     title = soup.find(class_="page-title").string.lower()
@@ -337,6 +346,15 @@ async def dnd(ctx, *, query):
                 "[Cleric](http://dnd5e.wikidot.com/cleric)",
                 "[Paladin](http://dnd5e.wikidot.com/paladin)"
             ]
+            misc = {}
+        elif query.lower() == 'extra attack':
+            url = 'http://dnd5e.wikidot.com/'
+            name = 'Extra Attack'
+            color = str_to_color(name)
+            desc = [
+                "Beginning at 5th level, you can attack twice, instead of once, whenever you take the Attack action on your turn.",
+                "For Fighters, the number of attacks increases to three when you reach 11th level in this class and to four when you reach 20th level in this class."
+            ],
             misc = {}
         elif title == query:
             name, desc, color, misc = fetch_spell(soup, url)
