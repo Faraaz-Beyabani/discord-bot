@@ -354,7 +354,7 @@ async def dnd(ctx, *, query):
                 "For Fighters, the number of attacks increases to three when you reach 11th level in this class and to four when you reach 20th level in this class."
             ]
             misc = {}
-        elif title == query:
+        elif title in query.lower():
             name, desc, color, misc = fetch_spell(soup, url)
         else:
             name, desc, color, misc = fetch_feature(soup, url, query)
