@@ -205,7 +205,7 @@ async def on_message(message):
 
             await message.delete()
             reply = f"{message.author.mention}, this content was already sent by " \
-                    f"{original_msg.author.nick} {'today' if curr_day == orig_day else 'yesterday'} at {original_msg.jump_url}"
+                    f"{original_msg.author.display_name} {'today' if curr_day == orig_day else 'yesterday'} at {original_msg.jump_url}"
 
             await message.channel.send(reply)
 
