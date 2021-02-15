@@ -93,7 +93,7 @@ def scrape_site(url):
     return soup
 
 def fetch_spell(soup, url):
-    stats = {'Level':"", 'Details':"", 'Casting Time':"", 'Range':"", 'Components':"", 'Duration':"", 
+    stats = {'Level':"", 'Casting Time':"", 'Range':"", 'Components':"", 'Duration':"", 
              'Source':"", 'Spell Lists':""}
     spell_attrs = ['Casting Time', 'Range', 'Components', 'Duration']
 
@@ -116,6 +116,9 @@ def fetch_spell(soup, url):
 
         if not all(v for v in stats.values()):
             for s in stats.keys():
+                if len(d.split()) > 7:
+                    continue
+
                 if s.lower() in d.lower() and not stats[s]:
                     stats[s] = d
                     break
@@ -136,6 +139,7 @@ def fetch_spell(soup, url):
     color_search = re.search(r'(?:\d\w+-level )?(\w*)(?: cantrip)?', stats['Level'])[1]
     color = str_to_color(color_search.lower())
 
+    stats['Details'] = ''
     for a in spell_attrs:
         stats['Details'] += stats[a] + '\n'
         del stats[a]
