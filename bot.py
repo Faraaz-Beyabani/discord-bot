@@ -369,10 +369,13 @@ async def dnd(ctx, *, query):
     embed.url=url
     embed.title=name
     embed.description = "\n\n".join(desc)
-    embed.color=color
+    embed.color=(color or 7526629)
 
     for k, v in misc.items():
-        embed.add_field(name=k, value=v, inline=False)
+        clean_v = v.strip()
+        if not clean_v:
+            continue
+        embed.add_field(name=k, value=clean_v, inline=False)
 
     await ctx.send(embed=embed)
 
