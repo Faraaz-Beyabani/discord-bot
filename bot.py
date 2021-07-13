@@ -255,10 +255,13 @@ async def reddit(ctx, subreddit):
         await ctx.send(posts['message'] + ': Please wait a while before trying again.')
         return
 
-    link = posts['data']['children'][int(random.random()*100)]['data'].get('url_overridden_by_dest')
-    link2 = posts['data']['children'][int(random.random()*100)]['data'].get('url')
+    random_post = posts['data']['children'][int(random.random()*100)]['data']
+    link = random_post.get('url_overridden_by_dest')
+    link2 = random_post.get('url')
 
-    await ctx.send(link) if link else await ctx.send(link2)
+    response = link or link2
+
+    await ctx.send(response)
 
 
 @client.command(
