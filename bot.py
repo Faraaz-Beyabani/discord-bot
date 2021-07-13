@@ -236,6 +236,19 @@ async def roll(ctx, *dice):
     result_message = '\n\n'.join([f'+ {rolls[0]}\n  {"  ".join([str(num) for num in rolls[1:]])}' for rolls in results])
     await ctx.send(f'```diff\n{result_message}```')
 
+@client.command(
+    pass_context=True,
+    help="Query a subreddit for a post (rate-limited)",
+    brief="Get a random post from a subreddit"
+)
+async def reddit(ctx, subreddit):
+    posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100")
+    posts = json.loads(posts.text)
+
+    link = posts['data']['children'][int(random.random()*100)]['data']['url_overridden_by_dest']
+
+    await ctx.send(link)
+
 
 @client.command(
     pass_context=True, 
