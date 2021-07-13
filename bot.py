@@ -246,7 +246,7 @@ async def reddit(ctx, subreddit):
     posts = json.loads(posts.text)
 
     if posts.get('message'):
-        ctx.send(posts['message'] + ': Please wait a while before trying again.')
+        await ctx.send(posts['message'] + ': Please wait a while before trying again.')
         return
 
     link = posts['data']['children'][int(random.random()*100)]['data']['url_overridden_by_dest']
