@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import requests
 from bs4 import BeautifulSoup
 from googlesearch import search
+import asyncio
 
 import discord
 from discord import File, Status, Embed, Color
@@ -247,7 +248,7 @@ async def reddit(ctx, subreddit):
         return
 
     posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100",
-                        headers={'User-Agent': 'DiscordApp:1.0 (by /u/Armtrader'})
+                        headers={'User-Agent': 'RaazOCop:1.0 (by /u/Armtrader'})
     print(posts.headers)
     posts = json.loads(posts.text)
 
@@ -258,10 +259,25 @@ async def reddit(ctx, subreddit):
     random_post = posts['data']['children'][int(random.random()*100)]['data']
     link = random_post.get('url_overridden_by_dest')
     link2 = random_post.get('url')
+    comments = random_post.get('permalink')
 
-    response = link or link2
+    url = link or link2
 
-    await ctx.send(response)
+    message = await ctx.send(url)
+    
+    emoji = '\N{THUMBS UP SIGN}'
+    await message.add_reaction(emoji)
+
+    def check(reaction):
+        return reaction.message_id == message.id and str(reaction.emoji) == '👍' and reaction.user_id != 680909677634125826
+
+    try:
+        _ = await client.wait_for('raw_reaction_add', timeout=60.0, check=check)
+    except asyncio.TimeoutError:
+        return
+    else:
+        await ctx.send(f'https://www.reddit.com{comments}')
+
 
 
 @client.command(
