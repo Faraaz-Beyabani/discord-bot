@@ -242,16 +242,23 @@ async def roll(ctx, *dice):
     brief="Get a random post from a subreddit"
 )
 async def reddit(ctx, subreddit):
-    posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100")
+    if len(subreddit.split()) > 1:
+        await ctx.send('Please enter the name of a subreddit, case insensitive')
+        return
+
+    posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100",
+                        headers={'User-Agent': 'DiscordApp:1.0 (by /u/Armtrader'})
+    print(posts.headers)
     posts = json.loads(posts.text)
 
     if posts.get('message'):
         await ctx.send(posts['message'] + ': Please wait a while before trying again.')
         return
 
-    link = posts['data']['children'][int(random.random()*100)]['data']['url_overridden_by_dest']
+    link = posts['data']['children'][int(random.random()*100)]['data'].get('url_overridden_by_dest')
+    link2 = posts['data']['children'][int(random.random()*100)]['data'].get('url')
 
-    await ctx.send(link)
+    await ctx.send(link) if link else await ctx.send(link2)
 
 
 @client.command(
