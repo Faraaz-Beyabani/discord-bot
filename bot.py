@@ -245,6 +245,10 @@ async def reddit(ctx, subreddit):
     posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100")
     posts = json.loads(posts.text)
 
+    if posts.get('message'):
+        ctx.send(posts['message'] + ': Please wait a while before trying again.')
+        return
+
     link = posts['data']['children'][int(random.random()*100)]['data']['url_overridden_by_dest']
 
     await ctx.send(link)
