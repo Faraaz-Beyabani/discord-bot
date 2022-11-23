@@ -29,7 +29,6 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    print(message)
     if message.author.bot:
         return
 
@@ -95,7 +94,6 @@ async def reddit(interaction, subreddit: str):
 
     posts = requests.get(f"https://www.reddit.com/r/{subreddit}/hot.json?restrict_sr=on&limit=100",
                         headers={'User-Agent': 'RaazOCop:1.0 (by /u/Armtrader'})
-    print(posts.headers)
     posts = json.loads(posts.text)
 
     if posts.get('message'):
