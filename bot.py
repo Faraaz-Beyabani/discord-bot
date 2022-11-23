@@ -5,7 +5,7 @@ import random
 from helpers import *
 
 import discord
-from discord import Embed, Intents, ui, PartialEmoji, ButtonStyle
+from discord import Embed, Intents, ui, ButtonStyle
 from discord.ext.commands import Bot
 
 import requests
