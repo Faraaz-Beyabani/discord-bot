@@ -57,6 +57,7 @@ async def on_message(message):
 async def sync(ctx, scope) -> None:
     if ctx.message.author.id == 229103556614029312:
         if scope == 'global':
+            ctx.bot.tree.clear_commands(guild=ctx.guild)
             synced = await ctx.bot.tree.sync()
         else:
             ctx.bot.tree.copy_global_to(guild=ctx.guild)
@@ -64,6 +65,8 @@ async def sync(ctx, scope) -> None:
             await ctx.send(
                 f"Synced {len(synced)} commands to this server"
             )
+    else:
+        await ctx.send('Invalid credentials for that command')
 
 
 
