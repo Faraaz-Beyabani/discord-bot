@@ -58,7 +58,11 @@ async def sync(ctx, scope) -> None:
     if ctx.message.author.id == 229103556614029312:
         if scope == 'global':
             ctx.bot.tree.clear_commands(guild=ctx.guild)
+            synced = await ctx.bot.tree.sync(guild=ctx.guild)
             synced = await ctx.bot.tree.sync()
+            await ctx.send(
+                f"Synced {len(synced)} commands globally"
+            )
         else:
             ctx.bot.tree.copy_global_to(guild=ctx.guild)
             synced = await ctx.bot.tree.sync(guild=ctx.guild)
